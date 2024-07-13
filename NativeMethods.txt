@@ -1,0 +1,9 @@
+MessageBox
+SetWindowsHookEx
+UnhookWindowsHookEx
+CallNextHookEx
+PostMessage
+GetMessage
+KBDLLHOOKSTRUCT
+VIRTUAL_KEY
+WM_KEYDOWN
