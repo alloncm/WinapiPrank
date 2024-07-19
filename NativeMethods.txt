@@ -15,3 +15,5 @@ GetWindowRect
 IsWindowVisible
 SetWindowPos
 GetWindowThreadProcessId
+SetWindowPlacement
+GetWindowPlacement

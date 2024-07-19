@@ -14,6 +14,15 @@ internal record WindowInfo(HWND Handle, bool IsVisible)
     private readonly Lazy<Process?> _process = new(() => Window.GetProcess(Handle));
     public Process? Process => _process.Value;
 
+    public bool Minimize()
+    {
+        WINDOWPLACEMENT windowplacement = default;
+        bool result = PInvoke.GetWindowPlacement(Handle, ref windowplacement);
+        if (result == false) return false;
+        windowplacement.showCmd = SHOW_WINDOW_CMD.SW_MINIMIZE;
+        return PInvoke.SetWindowPlacement(Handle, in windowplacement);
+    }
+
     public bool GetRect(out RECT rect)
     {
         return PInvoke.GetWindowRect(Handle, out rect);
