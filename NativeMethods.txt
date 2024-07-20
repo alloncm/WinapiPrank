@@ -7,3 +7,14 @@ GetMessage
 KBDLLHOOKSTRUCT
 VIRTUAL_KEY
 WM_KEYDOWN
+
+EnumWindows
+GetWindowTextLength
+GetWindowText
+GetWindowRect
+IsWindowVisible
+SetWindowPos
+GetWindowThreadProcessId
+SetWindowPlacement
+GetWindowPlacement
+GetForegroundWindow
