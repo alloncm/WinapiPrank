@@ -34,6 +34,8 @@ internal partial class Window
         return SetWindowPlacement(Handle, in windowplacement);
     }
 
+    public bool IsInForeground() => GetForegroundWindow() == Handle;
+
     public bool GetRect(out RECT rect)
     {
         return GetWindowRect(Handle, out rect);
