@@ -12,7 +12,7 @@ internal partial class Window
         windowsInfo = [];
 
         Parameters parameters = new Parameters(windowsInfo, filter);
-        GCHandle gcHandle = GCHandle.Alloc(parameters, GCHandleType.Pinned);
+        GCHandle gcHandle = GCHandle.Alloc(parameters, GCHandleType.Normal);
 
         try
         {
