@@ -6,13 +6,24 @@ using static Windows.Win32.PInvoke;
 
 namespace WinapiPrank;
 
-internal record WindowInfo(HWND Handle, bool IsVisible)
+internal partial class Window
 {
-    private readonly Lazy<string> _name = new(() => Window.GetWindowTitle(Handle));
-    public string Name => _name.Value;
+    private readonly Lazy<string> _name;
+    private readonly Lazy<Process?> _process;
 
-    private readonly Lazy<Process?> _process = new(() => Window.GetProcess(Handle));
+    public HWND Handle { get; }
+    public bool IsVisible { get; }
+
+    public string Name => _name.Value;
     public Process? Process => _process.Value;
+
+    private Window(HWND handle, bool isVisible)
+    {
+        Handle = handle;
+        IsVisible = isVisible;
+        _name = new Lazy<string>(() => GetWindowTitle(Handle));
+        _process = new Lazy<Process?>(() => GetProcess(Handle));
+    }
 
     public bool Minimize()
     {
@@ -33,45 +44,15 @@ internal record WindowInfo(HWND Handle, bool IsVisible)
         return SetWindowPos(Handle, HWND.Null, rect.X, rect.Y, rect.Width, rect.Width,
             SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
     }
-}
 
-internal static class Window
-{
-    private record Parameters(List<WindowInfo> Windows, Filter Filter);
-
-    public static bool GetWindowsInfo(Filter filter, out List<WindowInfo> windowsInfo)
-    {
-        windowsInfo = [];
-
-        Parameters parameters = new Parameters(windowsInfo, filter);
-        GCHandle gcHandle = GCHandle.Alloc(parameters);
-
-        bool result = EnumWindows(static (handle, lParam) =>
-        {
-            Parameters parameters = (GCHandle.FromIntPtr(lParam).Target as Parameters)!;
-
-            bool visible = IsWindowVisible(handle);
-
-            if (parameters.Filter.HasFlag(Filter.Visible) && !visible) return true;
-
-            parameters.Windows.Add(new WindowInfo(handle, visible));
-
-            return true;
-        }, GCHandle.ToIntPtr(gcHandle));
-
-        if (gcHandle.IsAllocated) gcHandle.Free();
-
-        return result;
-    }
-
-    public static unsafe Process? GetProcess(HWND handle)
+    private static unsafe Process? GetProcess(HWND handle)
     {
         uint processId;
         uint result = GetWindowThreadProcessId(handle, &processId);
         return result == 0 ? null : Process.GetProcessById((int) processId);
     }
 
-    public static unsafe string GetWindowTitle(HWND handle)
+    private static unsafe string GetWindowTitle(HWND handle)
     {
         int length = GetWindowTextLength(handle);
 
@@ -81,12 +62,5 @@ internal static class Window
         {
             fixed (char* c = span) GetWindowText(pair.handle, c, pair.length);
         });
-    }
-
-    [Flags]
-    public enum Filter
-    {
-        None = 0,
-        Visible = 1,
     }
 }
