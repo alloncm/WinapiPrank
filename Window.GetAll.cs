@@ -12,24 +12,29 @@ internal partial class Window
         windowsInfo = [];
 
         Parameters parameters = new Parameters(windowsInfo, filter);
-        GCHandle gcHandle = GCHandle.Alloc(parameters);
+        GCHandle gcHandle = GCHandle.Alloc(parameters, GCHandleType.Pinned);
 
-        bool result = EnumWindows(static (handle, lParam) =>
+        try
         {
-            Parameters parameters = (GCHandle.FromIntPtr(lParam).Target as Parameters)!;
+            bool result = EnumWindows(static (handle, lParam) =>
+            {
+                Parameters parameters = (GCHandle.FromIntPtr(lParam).Target as Parameters)!;
 
-            bool visible = IsWindowVisible(handle);
+                bool visible = IsWindowVisible(handle);
 
-            if (parameters.Filter.HasFlag(Filter.Visible) && !visible) return true;
+                if (parameters.Filter.HasFlag(Filter.Visible) && !visible) return true;
 
-            parameters.Windows.Add(new Window(handle, visible));
+                parameters.Windows.Add(new Window(handle, visible));
 
-            return true;
-        }, GCHandle.ToIntPtr(gcHandle));
+                return true;
+            }, GCHandle.ToIntPtr(gcHandle));
 
-        if (gcHandle.IsAllocated) gcHandle.Free();
-
-        return result;
+            return result;
+        }
+        finally
+        {
+            if (gcHandle.IsAllocated) gcHandle.Free();
+        }
     }
 
     [Flags]
