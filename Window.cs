@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
+using static Windows.Win32.PInvoke;
 
 namespace WinapiPrank;
 
@@ -17,20 +17,20 @@ internal record WindowInfo(HWND Handle, bool IsVisible)
     public bool Minimize()
     {
         WINDOWPLACEMENT windowplacement = default;
-        bool result = PInvoke.GetWindowPlacement(Handle, ref windowplacement);
+        bool result = GetWindowPlacement(Handle, ref windowplacement);
         if (result == false) return false;
         windowplacement.showCmd = SHOW_WINDOW_CMD.SW_MINIMIZE;
-        return PInvoke.SetWindowPlacement(Handle, in windowplacement);
+        return SetWindowPlacement(Handle, in windowplacement);
     }
 
     public bool GetRect(out RECT rect)
     {
-        return PInvoke.GetWindowRect(Handle, out rect);
+        return GetWindowRect(Handle, out rect);
     }
 
     public bool Move(in RECT rect)
     {
-        return PInvoke.SetWindowPos(Handle, HWND.Null, rect.X, rect.Y, rect.Width, rect.Width,
+        return SetWindowPos(Handle, HWND.Null, rect.X, rect.Y, rect.Width, rect.Width,
             SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
     }
 }
@@ -46,11 +46,11 @@ internal static class Window
         Parameters parameters = new Parameters(windowsInfo, filter);
         GCHandle gcHandle = GCHandle.Alloc(parameters);
 
-        bool result = PInvoke.EnumWindows(static (handle, lParam) =>
+        bool result = EnumWindows(static (handle, lParam) =>
         {
             Parameters parameters = (GCHandle.FromIntPtr(lParam).Target as Parameters)!;
 
-            bool visible = PInvoke.IsWindowVisible(handle);
+            bool visible = IsWindowVisible(handle);
 
             if (parameters.Filter.HasFlag(Filter.Visible) && !visible) return true;
 
@@ -67,19 +67,19 @@ internal static class Window
     public static unsafe Process? GetProcess(HWND handle)
     {
         uint processId;
-        uint result = PInvoke.GetWindowThreadProcessId(handle, &processId);
+        uint result = GetWindowThreadProcessId(handle, &processId);
         return result == 0 ? null : Process.GetProcessById((int) processId);
     }
 
     public static unsafe string GetWindowTitle(HWND handle)
     {
-        int length = PInvoke.GetWindowTextLength(handle);
+        int length = GetWindowTextLength(handle);
 
         if (length == 0) return string.Empty;
 
         return string.Create(length + 1, (handle, length: length + 1), static (span, pair) =>
         {
-            fixed (char* c = span) PInvoke.GetWindowText(pair.handle, c, pair.length);
+            fixed (char* c = span) GetWindowText(pair.handle, c, pair.length);
         });
     }
 
