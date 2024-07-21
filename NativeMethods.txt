@@ -20,5 +20,3 @@ GetWindowPlacement
 GetForegroundWindow
 
 GetCursorPos
-ShowCursor
-GetCursorInfo
