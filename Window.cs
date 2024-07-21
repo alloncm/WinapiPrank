@@ -12,15 +12,13 @@ internal partial class Window
     private readonly Lazy<Process?> _process;
 
     public HWND Handle { get; }
-    public bool IsVisible { get; }
 
     public string Name => _name.Value;
     public Process? Process => _process.Value;
 
-    private Window(HWND handle, bool isVisible)
+    private Window(HWND handle)
     {
         Handle = handle;
-        IsVisible = isVisible;
         _name = new Lazy<string>(() => GetWindowTitle(Handle));
         _process = new Lazy<Process?>(() => GetProcess(Handle));
     }
@@ -34,17 +32,28 @@ internal partial class Window
         return SetWindowPlacement(Handle, in windowplacement);
     }
 
+    public bool IsVisible() => IsWindowVisible(Handle);
+
     public bool IsInForeground() => GetForegroundWindow() == Handle;
 
     public bool GetRect(out RECT rect)
     {
         return GetWindowRect(Handle, out rect);
     }
-
-    public bool Move(in RECT rect)
+    
+    public bool GetInfo(out WINDOWINFO windowinfo)
     {
-        return SetWindowPos(Handle, HWND.Null, rect.X, rect.Y, rect.Width, rect.Width,
-            SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+        windowinfo = default;
+        return GetWindowInfo(Handle, ref windowinfo);
+    }
+
+    /// <summary>
+    /// this only move window to (x,y)
+    /// could not figure out how to move the window and resize it. 
+    /// </summary>
+    public bool Move(int x, int y)
+    {
+        return SetWindowPos(Handle, HWND.Null, x, y, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
     }
 
     private static unsafe Process? GetProcess(HWND handle)
