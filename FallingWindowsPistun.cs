@@ -3,17 +3,27 @@ using Windows.Win32.Foundation;
 
 namespace WinapiPrank;
 
+/// <summary>
+/// Move the all user windows down by specified amount of pixels.
+///
+/// Trigger:
+/// wait while the mouse moves pass the thresholds - (<see cref="Options.MouseXDifferenceThreshold"/>, <see cref="Options.MouseYDifferenceThreshold"/>)
+/// for duration - <see cref="Options.StationaryMouseDurationForTrigger"/> 
+/// then 
+/// for then start to move all visible window (and only user windows, not explorer or the toolbar)
+/// for specified pixels <see cref="Options.MoveWindowDownByPixels"/> limited by times a sec -<see cref="Options.MoveWindowsOncePer"/>
+/// </summary>
 public class FallingWindowsPistun
 {
-    private readonly FallingWindowsOptions _fallingWindowsOptions;
+    private readonly Options _options;
     
     private DateTime _lastMoveWindowsAt = DateTime.Now;
     private readonly int _triggerStationaryMouseIntervalCount;
 
-    public FallingWindowsPistun(FallingWindowsOptions fallingWindowsOptions)
+    public FallingWindowsPistun(Options options)
     {
-        _fallingWindowsOptions = fallingWindowsOptions;
-        _triggerStationaryMouseIntervalCount = (int) Math.Ceiling(fallingWindowsOptions.StationaryMouseDurationForTrigger / fallingWindowsOptions.IntervalTime);
+        _options = options;
+        _triggerStationaryMouseIntervalCount = (int) Math.Ceiling(options.StationaryMouseDurationForTrigger / options.IntervalTime);
     }
 
 
@@ -32,8 +42,8 @@ public class FallingWindowsPistun
             int diffX = Math.Abs(lastMousePos.X - pos.X);
             int diffY = Math.Abs(lastMousePos.Y - pos.Y);
 
-            bool hasMouseMoved = diffX <= _fallingWindowsOptions.MouseXDifferenceThreshold 
-                                 && diffY <= _fallingWindowsOptions.MouseYDifferenceThreshold;
+            bool hasMouseMoved = diffX <= _options.MouseXDifferenceThreshold 
+                                 && diffY <= _options.MouseYDifferenceThreshold;
 
             if (hasMouseMoved)
             {
@@ -41,7 +51,7 @@ public class FallingWindowsPistun
 
                 if (stationaryMouseIntervalCount >= _triggerStationaryMouseIntervalCount)
                 {
-                    if (!MoveAllWindowsDownByPixels(_fallingWindowsOptions.MoveWindowDownByPixels))
+                    if (!MoveAllWindowsDownByPixels(_options.MoveWindowDownByPixels))
                     {
                         break;
                     }
@@ -54,13 +64,13 @@ public class FallingWindowsPistun
 
             lastMousePos = pos;
 
-            Thread.Sleep(_fallingWindowsOptions.IntervalTime);
+            Thread.Sleep(_options.IntervalTime);
         }
     }
     
     private bool MoveAllWindowsDownByPixels(int pixelCount)
     {
-        if (DateTime.Now - _lastMoveWindowsAt <= _fallingWindowsOptions.MoveWindowsOncePer)
+        if (DateTime.Now - _lastMoveWindowsAt <= _options.MoveWindowsOncePer)
             return true;
 
         if (!Window.GetAll(Window.Filter.Visible, out var windows)) return false;
@@ -68,15 +78,15 @@ public class FallingWindowsPistun
         foreach (Window window in windows)
         {
             if (!window.GetRect(out RECT rect)) return false;
-
-            window.Move(new RECT(rect.left, rect.top + pixelCount, rect.right, rect.bottom + pixelCount));
+            
+            _ = window.Move(rect.X, rect.Y + pixelCount);
         }
 
         _lastMoveWindowsAt = DateTime.Now;
         return true;
     }
 
-    public class FallingWindowsOptions
+    public class Options
     {
         public TimeSpan IntervalTime { get; set; } = TimeSpan.FromMilliseconds(10);
         public TimeSpan StationaryMouseDurationForTrigger {get;set;}= TimeSpan.FromSeconds(2);
