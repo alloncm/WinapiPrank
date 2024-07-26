@@ -19,4 +19,10 @@ public class Program
 
         pistun.Run();
     }
+
+    [Command(nameof(KeyHook))]
+    public void KeyHook()
+    {
+        //TODO
+    }
 }
