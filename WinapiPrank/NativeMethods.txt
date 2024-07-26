@@ -18,5 +18,6 @@ GetWindowThreadProcessId
 SetWindowPlacement
 GetWindowPlacement
 GetForegroundWindow
+GetWindowInfo
 
 GetCursorPos

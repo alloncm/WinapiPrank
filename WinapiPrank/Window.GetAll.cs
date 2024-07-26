@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Windows.Win32.UI.WindowsAndMessaging;
 using static Windows.Win32.PInvoke;
 
 namespace WinapiPrank;
@@ -20,11 +21,21 @@ internal partial class Window
             {
                 Parameters parameters = (GCHandle.FromIntPtr(lParam).Target as Parameters)!;
 
-                bool visible = IsWindowVisible(handle);
+                Window window = new Window(handle);
 
-                if (parameters.Filter.HasFlag(Filter.Visible) && !visible) return true;
+                bool hasInfo = window.GetInfo(out var info);
+                bool visible = window.IsVisible();
 
-                parameters.Windows.Add(new Window(handle, visible));
+                if (parameters.Filter.HasFlag(Filter.Visible) != visible) return true;
+                if (hasInfo)
+                {
+                    if (parameters.Filter.HasFlag(Filter.ToolWindow) != info.dwExStyle.HasFlag(WINDOW_EX_STYLE.WS_EX_TOOLWINDOW))
+                        return true;
+                    if (parameters.Filter.HasFlag(Filter.Popup) != info.dwStyle.HasFlag(WINDOW_STYLE.WS_POPUP))
+                        return true;
+                }
+
+                parameters.Windows.Add(window);
 
                 return true;
             }, GCHandle.ToIntPtr(gcHandle));
@@ -42,5 +53,7 @@ internal partial class Window
     {
         None = 0,
         Visible = 1,
+        ToolWindow = 2,
+        Popup = 4
     }
 }
