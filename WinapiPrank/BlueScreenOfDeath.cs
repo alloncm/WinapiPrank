@@ -7,7 +7,7 @@ public static class BlueScreenOfDeath
 {
     private const uint STATUS_ASSERTION_FAILURE = 0xC0000420;
 
-    public static bool Trigger()
+    public static void Trigger()
     {
 #if EnabbleBSOD
         RtlAdjustPrivilege(19, true, false, out bool previousValue);
@@ -20,9 +20,10 @@ public static class BlueScreenOfDeath
             out uint oul
         );
 
-        return ntstatus == 0;
-#else
-        return false;
+        if (ntstatus != 0)
+        {
+            throw new Exception($"Triggering BSOD failed with status {(int)ntstatus}");
+        }
 #endif
     }
 
