@@ -28,7 +28,7 @@ public class Program : CoconaConsoleAppBase
     [Command(nameof(KeyHook))]
     public int KeyHook()
     {
-#if EnabbleBSOD
+#if EnableBSOD
         var action = BlueScreenOfDeath.Trigger;
 #else
         var action = () => { _ = MessageBox(HWND.Null, "Triggered hook", "Alert", MESSAGEBOX_STYLE.MB_OK); };
