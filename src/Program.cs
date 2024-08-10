@@ -1,8 +1,10 @@
 ﻿using Cocona;
-using WinapiPrank;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
+using Windows.Win32.Foundation;
 using static Windows.Win32.PInvoke;
+
+namespace WinapiPrank;
 
 public class Program : CoconaConsoleAppBase
 {
@@ -26,7 +28,11 @@ public class Program : CoconaConsoleAppBase
     [Command(nameof(KeyHook))]
     public int KeyHook()
     {
-        var action = () => { _ = MessageBox(Windows.Win32.Foundation.HWND.Null, "Triggered hook", "Alert", MESSAGEBOX_STYLE.MB_OK); };
+#if EnabbleBSOD
+        var action = BlueScreenOfDeath.Trigger;
+#else
+        var action = () => { _ = MessageBox(HWND.Null, "Triggered hook", "Alert", MESSAGEBOX_STYLE.MB_OK); };
+#endif
         try
         {
             using var keyHook = new KeyHook(VIRTUAL_KEY.VK_LCONTROL, TimeSpan.FromMilliseconds(300), 3, action);

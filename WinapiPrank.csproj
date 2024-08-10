@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <!--Uncomment to enable bsod--> 
-<!--  <PropertyGroup>-->
-<!--    <DefineConstants>EnabbleBSOD</DefineConstants>-->
-<!--  </PropertyGroup>-->
+  <!-- <PropertyGroup>
+    <DefineConstants>EnabbleBSOD</DefineConstants>
+  </PropertyGroup> -->
 
   <ItemGroup>
     <PackageReference Include="Cocona" Version="2.2.0" />
