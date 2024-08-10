@@ -16,21 +16,21 @@ namespace WinapiPrank;
 public class FallingWindowsPistun
 {
     private readonly Options _options;
-    
+
     private DateTime _lastMoveWindowsAt = DateTime.Now;
     private readonly int _triggerStationaryMouseIntervalCount;
 
     public FallingWindowsPistun(Options options)
     {
         _options = options;
-        _triggerStationaryMouseIntervalCount = (int) Math.Ceiling(options.StationaryMouseDurationForTrigger / options.IntervalTime);
+        _triggerStationaryMouseIntervalCount = (int)Math.Ceiling(options.StationaryMouseDurationForTrigger / options.IntervalTime);
     }
 
 
     /// <summary>
     /// blocking
     /// </summary>
-    public void Run(CancellationToken cancellationToken = default)
+    public void Run(CancellationToken cancellationToken)
     {
         Point lastMousePos = default;
         int stationaryMouseIntervalCount = 0;
@@ -42,7 +42,7 @@ public class FallingWindowsPistun
             int diffX = Math.Abs(lastMousePos.X - pos.X);
             int diffY = Math.Abs(lastMousePos.Y - pos.Y);
 
-            bool hasMouseMoved = diffX <= _options.MouseXDifferenceThreshold 
+            bool hasMouseMoved = diffX <= _options.MouseXDifferenceThreshold
                                  && diffY <= _options.MouseYDifferenceThreshold;
 
             if (hasMouseMoved)
@@ -67,7 +67,7 @@ public class FallingWindowsPistun
             Thread.Sleep(_options.IntervalTime);
         }
     }
-    
+
     private bool MoveAllWindowsDownByPixels(int pixelCount)
     {
         if (DateTime.Now - _lastMoveWindowsAt <= _options.MoveWindowsOncePer)
@@ -78,7 +78,7 @@ public class FallingWindowsPistun
         foreach (Window window in windows)
         {
             if (!window.GetRect(out RECT rect)) return false;
-            
+
             _ = window.Move(rect.X, rect.Y + pixelCount);
         }
 
@@ -89,8 +89,8 @@ public class FallingWindowsPistun
     public class Options
     {
         public TimeSpan IntervalTime { get; set; } = TimeSpan.FromMilliseconds(10);
-        public TimeSpan StationaryMouseDurationForTrigger {get;set;}= TimeSpan.FromSeconds(2);
-        public TimeSpan MoveWindowsOncePer {get;set;}= TimeSpan.FromSeconds(1);
+        public TimeSpan StationaryMouseDurationForTrigger { get; set; } = TimeSpan.FromSeconds(2);
+        public TimeSpan MoveWindowsOncePer { get; set; } = TimeSpan.FromSeconds(1);
 
         public int MouseXDifferenceThreshold { get; set; } = 10;
         public int MouseYDifferenceThreshold { get; set; } = 10;

@@ -3,7 +3,7 @@ SetWindowsHookEx
 UnhookWindowsHookEx
 CallNextHookEx
 PostMessage
-GetMessage
+PeekMessage
 KBDLLHOOKSTRUCT
 VIRTUAL_KEY
 WM_KEYDOWN

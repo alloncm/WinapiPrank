@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>library</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -12,6 +12,10 @@
 <!--  <PropertyGroup>-->
 <!--    <DefineConstants>EnabbleBSOD</DefineConstants>-->
 <!--  </PropertyGroup>-->
+
+  <ItemGroup>
+    <PackageReference Include="Cocona" Version="2.2.0" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.106">
