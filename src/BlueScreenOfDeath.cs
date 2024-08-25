@@ -9,7 +9,7 @@ public static class BlueScreenOfDeath
 
     public static void Trigger()
     {
-#if EnabbleBSOD
+#if EnableBSOD
         RtlAdjustPrivilege(19, true, false, out bool previousValue);
 
         NTSTATUS ntstatus = NtRaiseHardError(STATUS_ASSERTION_FAILURE,

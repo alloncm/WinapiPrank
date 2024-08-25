@@ -7,6 +7,8 @@ namespace WinapiPrank;
 
 internal class KeyHook : IDisposable
 {
+    private readonly HOOKPROC _hookProcDelegate;     // Keeping a ref to the delegate, otherwise the GC will dealocate the delegate we pass to SetHook
+
     private readonly uint _key;
     private readonly TimeSpan _maxDelayBetweenKeyStrokes;
     private readonly int _numberOfContiguousKeyStrokesToTrigger;
@@ -15,26 +17,33 @@ internal class KeyHook : IDisposable
 
     private int _strokesCounter = 0;
     private DateTime _lastStroke = DateTime.MinValue;
-    private HHOOK _hook = HHOOK.Null;
+    private HHOOK _hook;
 
     internal KeyHook(VIRTUAL_KEY key, TimeSpan maxDelayBetweenStrokes, int numberOfContiguousKeyStrokesToTrigger, Action actionToTrigger, int? randomness = null)
     {
+        _hookProcDelegate = new HOOKPROC(HookCallback);
+
         _key = (uint)key;
         _maxDelayBetweenKeyStrokes = maxDelayBetweenStrokes;
         _numberOfContiguousKeyStrokesToTrigger = numberOfContiguousKeyStrokesToTrigger;
         _actionToTrigger = actionToTrigger;
         _randomness = randomness;
+
+        _hook = SetWindowsHookEx(WINDOWS_HOOK_ID.WH_KEYBOARD_LL, _hookProcDelegate, HINSTANCE.Null, 0);
+        if (_hook.IsNull)
+        {
+            throw new Exception("Could not install a low level keybaord hook");
+        }
     }
 
-    public bool Setup()
+    public void Run(CancellationToken ct)
     {
-        _hook = SetWindowsHookEx(WINDOWS_HOOK_ID.WH_KEYBOARD_LL, HookCallback, HINSTANCE.Null, 0);
-        return !_hook.IsNull;
-    }
-
-    public void Run()
-    {
-        while (GetMessage(out MSG _, HWND.Null, 0, 0)) { }
+        while (!ct.IsCancellationRequested)
+        {
+            // In order handle events and keep the WinApi process responsive 
+            PeekMessage(out MSG _, HWND.Null, 0, 0, PEEK_MESSAGE_REMOVE_TYPE.PM_REMOVE);
+            Thread.Sleep(1);    // Prevent busy wait
+        }
     }
 
     private unsafe LRESULT HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
